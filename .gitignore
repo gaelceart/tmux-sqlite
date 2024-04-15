@@ -1,0 +1,6 @@
+node_modules
+.swp
+.ceart
+msg*.db
+
+package-lock.json

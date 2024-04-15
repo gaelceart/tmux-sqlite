@@ -34,21 +34,18 @@ export class Message {
 
     if (!where) return await this.execQuery(sentence);
 
-    const wheres = Object.entries(where);
-    const conditions = [];
-    wheres.forEach(e => {
-      const [key, value] = e;
-      const queryContainsNull = typeof value === 'string' && ['is null', 'is not null'].includes(value.toLowerCase());
-      const union = queryContainsNull ? ' ' : '=';
+    const ANDs = Object.entries(where);
+    const andQuery = queryConditions(ANDs, 'AND');
 
-      const cond = `${key}${union}${value}`;
-      conditions.push(cond);
-    });
+    let query = `${sentence} WHERE ${andQuery}`;
 
-    const logicGate = params?.or ? ' OR ' : ' AND ';
-    const query = conditions.join(logicGate);
-
-    return await this.execQuery(`${sentence} WHERE ${query}`);
+    const ORs = Object.entries(params?.or);
+    if (ORs) {
+      const orQuery = queryConditions(ORs, 'OR');
+      query += ` OR ${orQuery}`;
+    }
+    console.log(query);
+    return await this.execQuery(query);
   };
 
   update = async params => {
@@ -71,35 +68,37 @@ export class Message {
     columns = columns.join(',');
 
     // WHERE
-    const wheres = Object.entries(where);
+    const ANDs = Object.entries(where);
 
     // completar condiciones
     const conditions = [];
-
-    wheres.forEach(e => {
-      const [key, value] = e;
-      const queryContainsNull = typeof value === 'string' && ['is null', 'is not null'].includes(value.toLowerCase());
-      const union = queryContainsNull ? ' ' : '=';
-
-      const cond = `${key}${union}${value}`;
-      conditions.push(cond);
-    });
-
-    const logicGate = params?.or ? ' OR ' : ' AND ';
-    const query = conditions.join(logicGate);
-
-    console.log(sentence + 'WHERE ' + query);
+    const query = queryConditions(ANDs, 'AND');
 
     return await this.execQuery(`${sentence} WHERE ${query}`);
   };
 }
 
+function queryConditions (conditions, logicGate) {
+  const query = [];
+
+  conditions.forEach(e => {
+    const [key, value] = e;
+    const queryContainsNull = typeof value === 'string' && ['is null', 'is not null'].includes(value.toLowerCase());
+    const symbol = queryContainsNull ? ' ' : '=';
+
+    const cond = `${key}${symbol}${value}`;
+    query.push(cond);
+  });
+
+  return query.join(` ${logicGate} `);
+}
+
 const m = new Message();
 
 const msg = await m.find({
-  where: { reaction: 'is not null' },
+  where: { reaction: 'is not null', from_me: true },
   or: {
-    from_me: true
+    reply_of: 'is not null'
   }
 })
   .catch(error => { return { ok: false, error }; });

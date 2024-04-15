@@ -1,0 +1,33 @@
+{
+  "name": "tmux-sqlite",
+  "version": "0.0.1",
+  "description": "NodeJS -> SQLite middleware for termux aarch64",
+  "main": "app.js",
+  "type": "module",
+  "devDependencies": {
+    "semistandard": "^17.0.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "run": "node --watch app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gaelceart/tmux-sqlite.git"
+  },
+  "keywords": [
+    "sqlite",
+    "termux",
+    "node",
+    "js"
+  ],
+  "author": "Gastón Villalba",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/gaelceart/tmux-sqlite/issues"
+  },
+  "homepage": "https://github.com/gaelceart/tmux-sqlite#readme",
+  "eslintConfig": {
+    "extends": "./node_modules/semistandard/eslintrc.json"
+  }
+}

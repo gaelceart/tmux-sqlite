@@ -39,12 +39,12 @@ export class Message {
 
     let query = `${sentence} WHERE ${andQuery}`;
 
-    const ORs = Object.entries(params?.or);
-    if (ORs) {
+    if (params?.or) {
+      const ORs = Object.entries(params?.or);
       const orQuery = queryConditions(ORs, 'OR');
       query += ` OR ${orQuery}`;
     }
-    console.log(query);
+
     return await this.execQuery(query);
   };
 
@@ -70,21 +70,36 @@ export class Message {
     // WHERE
     const ANDs = Object.entries(where);
 
-    // completar condiciones
-    const conditions = [];
     const query = queryConditions(ANDs, 'AND');
 
-    return await this.execQuery(`${sentence} WHERE ${query}`);
+    const finalQuery = `${sentence} WHERE ${query}`;
+    return await this.execQuery(finalQuery);
   };
 }
 
 function queryConditions (conditions, logicGate) {
   const query = [];
 
+  const CMP_OP = {
+    $lt: '<',
+    $le: '<=',
+    $gt: '>',
+    $ge: '>=',
+    $ne: '!='
+  };
+
   conditions.forEach(e => {
-    const [key, value] = e;
+    let [key, value] = e;
+
     const queryContainsNull = typeof value === 'string' && ['is null', 'is not null'].includes(value.toLowerCase());
-    const symbol = queryContainsNull ? ' ' : '=';
+
+    let symbol = queryContainsNull ? ' ' : '=';
+
+    if (typeof value === 'object') {
+      const [operator, target] = Object.entries(value)[0];
+      symbol = CMP_OP[operator];
+      value = target;
+    }
 
     const cond = `${key}${symbol}${value}`;
     query.push(cond);
@@ -96,11 +111,16 @@ function queryConditions (conditions, logicGate) {
 const m = new Message();
 
 const msg = await m.find({
-  where: { reaction: 'is not null', from_me: true },
+  where: {
+    _id: {
+      $gt: 220000
+    }
+  },
+  fields: ['text_data, reply_of'],
   or: {
     reply_of: 'is not null'
   }
 })
   .catch(error => { return { ok: false, error }; });
 
-console.log({ msg, type: typeof msg });
+console.log(msg);

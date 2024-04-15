@@ -1,6 +1,6 @@
 node_modules
-.swp
-.ceart
+*.swp
+*.ceart
 msg*.db
 
 package-lock.json
